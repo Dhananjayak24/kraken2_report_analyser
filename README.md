@@ -78,14 +78,14 @@ Each CSV file contains data only for the specified domain and rank.
 
 Each output CSV file includes the following columns:
 
-`sample` – Sample identifier provided at runtime
-`domain` – Taxonomic domain inferred from lineage
-`rank` – Taxonomic rank (P, C, O, F, G, or S)
-`tax_id` – NCBI taxonomy identifier
-`name` – Taxon name
-`reads_clade` – Number of reads assigned to the taxon and all its descendants
-`relative_abundance` – Relative abundance calculated within the file
-`lineage` – Full taxonomic lineage reconstructed from the Kraken2 report
+- `sample` – Sample identifier provided at runtime
+- `domain` – Taxonomic domain inferred from lineage
+- `rank` – Taxonomic rank (P, C, O, F, G, or S)
+- `tax_id` – NCBI taxonomy identifier
+- `name` – Taxon name
+- `reads_clade` – Number of reads assigned to the taxon and all its descendants
+- `relative_abundance` – Relative abundance calculated within the file
+- `lineage` – Full taxonomic lineage reconstructed from the Kraken2 report
 
 Relative abundance values are normalized independently within each CSV file, ensuring that abundance estimates are specific to the given domain and rank.
 
