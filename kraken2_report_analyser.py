@@ -4,6 +4,7 @@ import argparse
 import os
 import sys
 import csv
+import pandas as pd
 
 #Domain keywords to divide the data based on domains
 domain_keywords = {
@@ -190,6 +191,53 @@ def compute_relative_abundance(rows):
 
     return rows
 
+#helper function for write domain excel function
+def rows_to_dataframe(rows):
+    """
+    Convert parsed rows to a pandas DataFrame.
+    """
+
+    data = []
+
+    for row in rows:
+        data.append({
+            "domain": row["domain"],
+            "rank": row["rank"],
+            "tax_id": row["tax_id"],
+            "name": row["name"],
+            "reads_clade": row["reads_clade"],
+            "relative_abundance": row["relative_abundance"],
+            "lineage": row["lineage"]
+        })
+
+    return pd.DataFrame(data)
+
+
+def write_domain_excel(rows, domain, sample_name, output_path, rank_map):
+    # Write one Excel file per domain with multiple sheets
+
+    domain_rows = [r for r in rows if r.get("domain") == domain]
+
+    if not domain_rows:
+        print(f"No data for domain {domain}, skipping Excel file.")
+        return
+
+    output_file = os.path.join(output_path, f"{sample_name}_{domain.lower()}.xlsx")
+
+    with pd.ExcelWriter(output_file, engine="openpyxl") as writer:
+        for rank, rank_name in rank_map.items():
+
+            subset = filter_rows(domain_rows, rank=rank)
+
+            if not subset:
+                continue
+
+            subset = compute_relative_abundance(subset)
+            df = rows_to_dataframe(subset)
+
+            df.to_excel(writer, sheet_name=rank_name, index=False)
+
+    print(f"Written Excel file: {output_file}")
 
 def write_csv(rows, output_file, sample_name):
     """
@@ -239,23 +287,7 @@ def main():
 
     #final combinations of files to be saved using all domain and all ranks
     for domain in domain_keywords:
-        for rank, rank_name in rank_dict.items():
-
-            subset = filter_rows(parsed_data_3, domain=domain, rank=rank)
-
-            if not subset:
-                continue
-
-            subset = compute_relative_abundance(subset)
-
-            output_file = os.path.join(
-                output_path,
-                f"{sample_name}_{domain.lower()}_{rank_name}.csv"
-            )
-
-            write_csv(subset, output_file, sample_name)
-
-            print(f"Wrote {len(subset)} rows -> {output_file}")
+        write_domain_excel(rows=parsed_data_3, domain=domain, sample_name=sample_name, output_path=output_path, rank_map=rank_dict)
 
     #writing all species file
     all_species = filter_rows(parsed_data_3, rank="S")
